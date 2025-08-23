@@ -1,0 +1,12 @@
+GOOGLE_API_KEY: "AIzaSyDMW0sn3dOuAMMupZS0rkb5MP_bAqBpgtc"
+JWT_SECRET_KEY: "kabadiguru@12345677889BLR"
+ADMIN_EMAILS: '["ddlsandeep7@gmail.com", "user1@example.com", "user2@example.com"]'
+DB_HOST: "/cloudsql/kabaddiguru:us-central1:kabaddi-sql"
+DB_PORT: "5432"
+DB_USER: "user"
+DB_PASSWORD: "Kabaddiguru@123"
+DB_NAME: "kabaddi_data"
+PGDATABASE: "postgres"
+DATABASE_URL: "postgresql://user:Kabaddiguru%40123@/kabaddi_data?host=/cloudsql/kabaddiguru:us-central1:kabaddi-sql"
+FRONTEND_ORIGIN: "http://localhost:3000"
+DEBUG: "True"

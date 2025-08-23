@@ -1,0 +1,80 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _REGION: us-central1
+  _SERVICE_NAME: kabaddi-backend
+
+steps:
+  # Load environment variables from config.env
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: load-config
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        if [ -f config.env ]; then
+          echo "Loading values from config.env"
+          # shellcheck disable=SC2046
+          export $(grep -E '^(GOOGLE_API_KEY|GEMINI_MODEL|DB_HOST|DB_PORT|DB_NAME|DB_USER|DB_PASSWORD|JWT_SECRET|JWT_ALGORITHM|JWT_EXPIRATION_HOURS|FRONTEND_ORIGIN|DEBUG)=' config.env | xargs)
+          
+          # Build DATABASE_URL from components
+          DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+          
+          printf "DATABASE_URL=%s\nJWT_SECRET_KEY=%s\nFRONTEND_ORIGIN=%s\nGOOGLE_API_KEY=%s\nGEMINI_MODEL=%s\nDEBUG=%s\n" \
+            "${DATABASE_URL}" "${JWT_SECRET}" "${FRONTEND_ORIGIN}" "${GOOGLE_API_KEY}" "${GEMINI_MODEL}" "${DEBUG}" > /workspace/.resolved_env
+        else
+          echo "config.env not found, using default values"
+          touch /workspace/.resolved_env
+        fi
+
+  # Build the backend container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', 'gcr.io/$PROJECT_ID/kabaddi-backend:$SHORT_SHA',
+      '-t', 'gcr.io/$PROJECT_ID/kabaddi-backend:latest',
+      '.'
+    ]
+    
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/kabaddi-backend:$SHORT_SHA']
+    
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/kabaddi-backend:latest']
+    
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -e
+        source /workspace/.resolved_env || true
+        
+        # Set default values if not loaded from config.env
+        : "${DATABASE_URL:=postgresql://postgres:password@localhost:5432/kabaddi_data}"
+        : "${JWT_SECRET_KEY:=your-secret-key-here}"
+        : "${FRONTEND_ORIGIN:=https://kabaddi-frontend-324578194548.us-central1.run.app}"
+        : "${GOOGLE_API_KEY:=}"
+        : "${GEMINI_MODEL:=gemini-2.5-flash-preview-05-20}"
+        : "${DEBUG:=false}"
+        
+        gcloud run deploy kabaddi-backend \
+          --image gcr.io/$PROJECT_ID/kabaddi-backend:$SHORT_SHA \
+          --region "$_REGION" \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 8000 \
+          --memory 2Gi \
+          --cpu 2 \
+          --max-instances 10 \
+          --set-env-vars DATABASE_URL="$DATABASE_URL",JWT_SECRET_KEY="$JWT_SECRET_KEY",FRONTEND_ORIGIN="$FRONTEND_ORIGIN",GOOGLE_API_KEY="$GOOGLE_API_KEY",GEMINI_MODEL="$GEMINI_MODEL",DEBUG="$DEBUG"
+
+images:
+  - 'gcr.io/$PROJECT_ID/kabaddi-backend:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/kabaddi-backend:latest'
+
+options:
+  machineType: 'E2_MEDIUM'

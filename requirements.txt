@@ -1,0 +1,15 @@
+langchain-community
+langchain-core
+langchain-google-genai
+pandas
+sqlalchemy
+python-dotenv
+tiktoken
+psycopg2-binary
+nest-asyncio
+asyncio
+fastapi
+uvicorn[standard]
+pydantic
+PyJWT
+email-validator 
