@@ -31,15 +31,6 @@ steps:
       - |
         set -e
         
-        # Set environment variables for deployment using Cloud SQL
-        # Using a different variable name to avoid substitution conflicts
-        DB_CONNECTION_STRING="postgresql://user:Kabaddiguru@123@/kabaddi_data?host=/cloudsql/kabaddiguru:us-central1:kabaddi-sql"
-        JWT_SECRET_KEY="your-secret-key-here"
-        FRONTEND_ORIGIN="https://kabaddi-frontend-324578194548.us-central1.run.app"
-        GOOGLE_API_KEY="AIzaSyDMW0sn3dOuAMMupZS0rkb5MP_bAqBpgtc"
-        GEMINI_MODEL="gemini-2.5-flash-preview-05-20"
-        DEBUG="false"
-        
         gcloud run deploy kabaddi-backend \
           --image gcr.io/$PROJECT_ID/kabaddi-backend:$SHORT_SHA \
           --region "$_REGION" \
@@ -50,7 +41,7 @@ steps:
           --cpu 2 \
           --max-instances 10 \
           --add-cloudsql-instances kabaddiguru:us-central1:kabaddi-sql \
-          --set-env-vars DATABASE_URL="$DB_CONNECTION_STRING",JWT_SECRET_KEY="$JWT_SECRET_KEY",FRONTEND_ORIGIN="$FRONTEND_ORIGIN",GOOGLE_API_KEY="$GOOGLE_API_KEY",GEMINI_MODEL="$GEMINI_MODEL",DEBUG="$DEBUG"
+          --set-env-vars DATABASE_URL="postgresql://user:Kabaddiguru@123@/kabaddi_data?host=/cloudsql/kabaddiguru:us-central1:kabaddi-sql",JWT_SECRET_KEY="your-secret-key-here",FRONTEND_ORIGIN="https://kabaddi-frontend-324578194548.us-central1.run.app",GOOGLE_API_KEY="AIzaSyDMW0sn3dOuAMMupZS0rkb5MP_bAqBpgtc",GEMINI_MODEL="gemini-2.5-flash-preview-05-20",DEBUG="false"
 
 images:
   - 'gcr.io/$PROJECT_ID/kabaddi-backend:$SHORT_SHA'
