@@ -1,9 +1,33 @@
 # Enhanced Kabaddi Analytics - Simplified API Server
 # Runs only Enhanced Chat mode for frontend integration
 
+# IMPORTANT: Load environment variables FIRST, before any imports that might need them
+import os
+import sys
+
+# Load environment variables from run-env.yaml if it exists (for Cloud Run)
+try:
+    import yaml
+    run_env_path = os.path.join(os.path.dirname(__file__), 'run-env.yaml')
+    if os.path.exists(run_env_path):
+        with open(run_env_path, 'r') as file:
+            env_vars = yaml.safe_load(file)
+            for key, value in env_vars.items():
+                os.environ[key] = str(value)
+        print("✅ Loaded environment variables from run-env.yaml")
+except Exception as e:
+    print(f"⚠️ Could not load run-env.yaml: {e}")
+
+# Load environment variables from config.env for local development
+try:
+    from dotenv import load_dotenv
+    load_dotenv('config.env')
+    print("✅ Loaded environment variables from config.env")
+except Exception as e:
+    print(f"⚠️ Could not load config.env: {e}")
+
 import asyncio
 import time
-import sys
 import json
 import re
 from typing import Dict, Any, List, Optional
@@ -34,9 +58,6 @@ from modules.performance_monitor import performance_monitor, PerformanceMetric
 from modules.model_optimizer import model_optimizer
 
 from modules.llm_config import get_llm
-from dotenv import load_dotenv
-import os
-import os
 
 # LangChain imports
 from langchain_community.utilities import SQLDatabase
@@ -44,25 +65,6 @@ from langchain_community.tools.sql_database.tool import QuerySQLDataBaseTool
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 import tiktoken
-
-# Load environment variables early so DEBUG/FRONTEND_ORIGIN are available
-try:
-    load_dotenv('config.env')
-except Exception:
-    pass
-
-# Load environment variables from run-env.yaml if it exists (for Cloud Run)
-try:
-    import yaml
-    run_env_path = os.path.join(os.path.dirname(__file__), 'run-env.yaml')
-    if os.path.exists(run_env_path):
-        with open(run_env_path, 'r') as file:
-            env_vars = yaml.safe_load(file)
-            for key, value in env_vars.items():
-                os.environ[key] = str(value)
-        print("✅ Loaded environment variables from run-env.yaml")
-except Exception as e:
-    print(f"⚠️ Could not load run-env.yaml: {e}")
 
 configure_logging()
 
