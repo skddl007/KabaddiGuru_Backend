@@ -51,6 +51,19 @@ try:
 except Exception:
     pass
 
+# Load environment variables from run-env.yaml if it exists (for Cloud Run)
+try:
+    import yaml
+    run_env_path = os.path.join(os.path.dirname(__file__), 'run-env.yaml')
+    if os.path.exists(run_env_path):
+        with open(run_env_path, 'r') as file:
+            env_vars = yaml.safe_load(file)
+            for key, value in env_vars.items():
+                os.environ[key] = str(value)
+        print("✅ Loaded environment variables from run-env.yaml")
+except Exception as e:
+    print(f"⚠️ Could not load run-env.yaml: {e}")
+
 configure_logging()
 
 # API Models for FastAPI
