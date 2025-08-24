@@ -1,0 +1,16 @@
+# Environment Variables Template
+# Copy this file to run-env.yaml and fill in your actual values
+# DO NOT commit run-env.yaml to version control
+
+GOOGLE_API_KEY: "YOUR_GOOGLE_API_KEY_HERE"
+JWT_SECRET_KEY: "YOUR_JWT_SECRET_KEY_HERE"
+ADMIN_EMAILS: '["admin@example.com"]'
+DB_HOST: "/cloudsql/YOUR_PROJECT:YOUR_REGION:YOUR_INSTANCE"
+DB_PORT: "5432"
+DB_USER: "YOUR_DB_USER"
+DB_PASSWORD: "YOUR_DB_PASSWORD"
+DB_NAME: "YOUR_DB_NAME"
+PGDATABASE: "postgres"
+DATABASE_URL: "postgresql://YOUR_DB_USER:YOUR_DB_PASSWORD@/YOUR_DB_NAME?host=/cloudsql/YOUR_PROJECT:YOUR_REGION:YOUR_INSTANCE"
+FRONTEND_ORIGIN: "YOUR_FRONTEND_URL"
+DEBUG: "False"

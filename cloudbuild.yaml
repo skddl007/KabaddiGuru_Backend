@@ -32,17 +32,34 @@ steps:
       - |
         set -e
         
-        gcloud run deploy $_SERVICE_NAME \
-          --image gcr.io/$PROJECT_ID/$_REPO_NAME:$BUILD_ID \
-          --region "$_REGION" \
-          --platform managed \
-          --allow-unauthenticated \
-          --port 8000 \
-          --memory 2Gi \
-          --cpu 2 \
-          --max-instances 10 \
-          --add-cloudsql-instances kabaddiguru:us-central1:kabaddi-sql \
-          --set-env-vars DATABASE_URL="postgresql://user:Kabaddiguru@123@/kabaddi_data?host=/cloudsql/kabaddiguru:us-central1:kabaddi-sql",JWT_SECRET_KEY="your-secret-key-here",FRONTEND_ORIGIN="https://kabaddi-frontend-324578194548.us-central1.run.app",GOOGLE_API_KEY="AIzaSyDMW0sn3dOuAMMupZS0rkb5MP_bAqBpgtc",GEMINI_MODEL="gemini-2.5-flash-preview-05-20",DEBUG="false"
+        # Read environment variables from run-env.yaml if it exists
+        if [ -f "run-env.yaml" ]; then
+          echo "Using run-env.yaml for environment variables"
+          gcloud run deploy $_SERVICE_NAME \
+            --image gcr.io/$PROJECT_ID/$_REPO_NAME:$BUILD_ID \
+            --region "$_REGION" \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8000 \
+            --memory 2Gi \
+            --cpu 2 \
+            --max-instances 10 \
+            --add-cloudsql-instances kabaddiguru:us-central1:kabaddi-sql \
+            --env-vars-file run-env.yaml
+        else
+          echo "run-env.yaml not found, using default environment variables"
+          gcloud run deploy $_SERVICE_NAME \
+            --image gcr.io/$PROJECT_ID/$_REPO_NAME:$BUILD_ID \
+            --region "$_REGION" \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8000 \
+            --memory 2Gi \
+            --cpu 2 \
+            --max-instances 10 \
+            --add-cloudsql-instances kabaddiguru:us-central1:kabaddi-sql \
+            --set-env-vars DEBUG="false",GEMINI_MODEL="gemini-2.5-flash-preview-05-20"
+        fi
 
 images:
   - 'gcr.io/$PROJECT_ID/$_REPO_NAME:latest'

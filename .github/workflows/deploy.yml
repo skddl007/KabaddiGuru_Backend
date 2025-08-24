@@ -58,6 +58,24 @@ jobs:
     - name: Configure Docker
       run: gcloud auth configure-docker
 
+    - name: Create run-env.yaml from secrets
+      run: |
+        cat > run-env.yaml << EOF
+        GOOGLE_API_KEY: "${{ secrets.GOOGLE_API_KEY }}"
+        JWT_SECRET_KEY: "${{ secrets.JWT_SECRET_KEY }}"
+        ADMIN_EMAILS: '${{ secrets.ADMIN_EMAILS }}'
+        DB_HOST: "/cloudsql/${{ secrets.DB_HOST }}"
+        DB_PORT: "${{ secrets.DB_PORT }}"
+        DB_USER: "${{ secrets.DB_USER }}"
+        DB_PASSWORD: "${{ secrets.DB_PASSWORD }}"
+        DB_NAME: "${{ secrets.DB_NAME }}"
+        PGDATABASE: "postgres"
+        DATABASE_URL: "${{ secrets.DATABASE_URL }}"
+        FRONTEND_ORIGIN: "${{ secrets.FRONTEND_ORIGIN }}"
+        DEBUG: "false"
+        GEMINI_MODEL: "gemini-2.5-flash-preview-05-20"
+        EOF
+
     - name: Deploy to Cloud Run
       run: |
         gcloud builds submit --config cloudbuild.yaml \

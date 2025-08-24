@@ -5,6 +5,7 @@ config.env
 .env.development.local
 .env.test.local
 .env.production.local
+run-env.yaml
 
 # Python
 __pycache__/
