@@ -5,26 +5,55 @@
 import os
 import sys
 
-# Load environment variables from run-env.yaml if it exists (for Cloud Run)
-try:
-    import yaml
-    run_env_path = os.path.join(os.path.dirname(__file__), 'run-env.yaml')
-    if os.path.exists(run_env_path):
-        with open(run_env_path, 'r') as file:
-            env_vars = yaml.safe_load(file)
-            for key, value in env_vars.items():
-                os.environ[key] = str(value)
-        print("✅ Loaded environment variables from run-env.yaml")
-except Exception as e:
-    print(f"⚠️ Could not load run-env.yaml: {e}")
+# Environment Configuration Setup
+# Priority: run-env.yaml (deployment) > config.env (local) > system env vars
 
-# Load environment variables from config.env for local development
-try:
-    from dotenv import load_dotenv
-    load_dotenv('config.env')
-    print("✅ Loaded environment variables from config.env")
-except Exception as e:
-    print(f"⚠️ Could not load config.env: {e}")
+# Check if we're in deployment mode (Cloud Run)
+is_deployment = os.getenv('K_SERVICE') is not None or os.getenv('PORT') is not None
+
+if is_deployment:
+    # Load environment variables from run-env.yaml for Cloud Run deployment
+    try:
+        import yaml
+        run_env_path = os.path.join(os.path.dirname(__file__), 'run-env.yaml')
+        if os.path.exists(run_env_path):
+            with open(run_env_path, 'r') as file:
+                env_vars = yaml.safe_load(file)
+                for key, value in env_vars.items():
+                    os.environ[key] = str(value)
+            print("✅ Loaded environment variables from run-env.yaml (deployment mode)")
+        else:
+            print("⚠️ run-env.yaml not found, using system environment variables")
+    except Exception as e:
+        print(f"⚠️ Could not load run-env.yaml: {e}")
+else:
+    # Load environment variables from config.env for local development
+    try:
+        from dotenv import load_dotenv
+        config_path = os.path.join(os.path.dirname(__file__), 'config.env')
+        if os.path.exists(config_path):
+            load_dotenv(config_path)
+            print("✅ Loaded environment variables from config.env (local mode)")
+        else:
+            print("⚠️ config.env not found, using system environment variables")
+    except Exception as e:
+        print(f"⚠️ Could not load config.env: {e}")
+
+# Set default values for missing environment variables
+if not os.getenv('DB_HOST'):
+    os.environ['DB_HOST'] = 'localhost'
+if not os.getenv('DB_PORT'):
+    os.environ['DB_PORT'] = '5432'
+if not os.getenv('DB_NAME'):
+    os.environ['DB_NAME'] = 'kabaddi_data'
+if not os.getenv('DB_USER'):
+    os.environ['DB_USER'] = 'postgres'
+if not os.getenv('DB_PASSWORD'):
+    os.environ['DB_PASSWORD'] = 'password'
+if not os.getenv('JWT_SECRET'):
+    os.environ['JWT_SECRET'] = 'your-secret-key-change-in-production'
+if not os.getenv('DEBUG'):
+    os.environ['DEBUG'] = 'false'
 
 import asyncio
 import time

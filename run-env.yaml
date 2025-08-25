@@ -1,5 +1,6 @@
-# Environment Variables for Local Development
-# This file is for local development only - production uses GitHub secrets
+# Environment Variables for Cloud Run Deployment
+# This file is for deployment only
+# DO NOT commit this file to version control
 
 GOOGLE_API_KEY: "AIzaSyDMW0sn3dOuAMMupZS0rkb5MP_bAqBpgtc"
 JWT_SECRET_KEY: "kabadiguru@12345677889BLR"
@@ -10,7 +11,8 @@ DB_USER: "user"
 DB_PASSWORD: "Kabaddiguru@123"
 DB_NAME: "kabaddi_data"
 PGDATABASE: "postgres"
-DATABASE_URL: "postgresql://user:Kabaddiguru@123@/kabaddi_data?host=/cloudsql/kabaddiguru:us-central1:kabaddi-sql"
+DATABASE_URL: "postgresql://user:Kabaddiguru%40123@/kabaddi_data?host=/cloudsql/kabaddiguru:us-central1:kabaddi-sql
+"
 FRONTEND_ORIGIN: "http://localhost:3000"
 DEBUG: "True"
 GEMINI_MODEL: "gemini-2.5-flash-preview-05-20"

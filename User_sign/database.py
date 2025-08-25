@@ -9,9 +9,8 @@ from typing import Optional, Dict, Any
 import json
 from dotenv import load_dotenv
 
-# Load environment variables from config.env file
-config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config.env')
-load_dotenv(config_path)
+# Load environment variables - will be handled by main.py
+# This ensures consistent environment loading across the application
 
 class UserDatabase:
     def __init__(self):
@@ -46,9 +45,19 @@ class UserDatabase:
     
     def get_connection(self):
         """Get PostgreSQL connection"""
-        if self.database_url and self.database_url.strip():
-            return psycopg2.connect(self.database_url)
-        return psycopg2.connect(**self.db_config)
+        # Check if we're in deployment mode (Cloud Run)
+        is_deployment = os.getenv('K_SERVICE') is not None or os.getenv('PORT') is not None
+        
+        if is_deployment:
+            # Use DATABASE_URL for Cloud SQL connection
+            if self.database_url and self.database_url.strip():
+                return psycopg2.connect(self.database_url)
+            else:
+                # Fallback to individual config for Cloud SQL
+                return psycopg2.connect(**self.db_config)
+        else:
+            # Local development - use individual config (avoid Cloud SQL socket)
+            return psycopg2.connect(**self.db_config)
     
     def init_database(self):
         """Initialize the database with user table"""

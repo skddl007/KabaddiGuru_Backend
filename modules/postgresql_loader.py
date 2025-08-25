@@ -15,19 +15,24 @@ except ImportError:
     pass
 
 # PostgreSQL connection parameters from config.env
-DB_HOST = os.getenv("DB_HOST", "127.0.0.1")  # Use IP instead of localhost for Windows
+DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = int(os.getenv("DB_PORT", "5432"))
 DB_USER = os.getenv("DB_USER", "postgres")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "Skd6397@@")
 DB_NAME = os.getenv("DB_NAME", "kabaddi_data")
 
-# Determine connection string: prefer full DATABASE_URL when provided (e.g., for Cloud Run/Cloud SQL)
+# Determine connection string based on environment
 import urllib.parse
+
+# Check if we're in deployment mode (Cloud Run)
+is_deployment = os.getenv('K_SERVICE') is not None or os.getenv('PORT') is not None
+
 DATABASE_URL = os.getenv("DATABASE_URL")
-if DATABASE_URL and DATABASE_URL.strip():
+if is_deployment and DATABASE_URL and DATABASE_URL.strip():
+    # Use DATABASE_URL for Cloud SQL connection in deployment
     POSTGRES_CONNECTION_STRING = DATABASE_URL
 else:
-    # URL encode the password for connection string
+    # Local development - use individual config (avoid Cloud SQL socket)
     encoded_password = urllib.parse.quote_plus(DB_PASSWORD)
     POSTGRES_CONNECTION_STRING = f"postgresql://{DB_USER}:{encoded_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
@@ -35,6 +40,12 @@ def check_and_create_database():
     """
     Check if database exists, create if it doesn't
     """
+    # Skip database creation in deployment mode (Cloud SQL)
+    is_deployment = os.getenv('K_SERVICE') is not None or os.getenv('PORT') is not None
+    if is_deployment:
+        print("✅ Skipping database creation in deployment mode (Cloud SQL)")
+        return True
+    
     try:
         # First, connect to PostgreSQL server without specifying database
         conn = psycopg2.connect(
